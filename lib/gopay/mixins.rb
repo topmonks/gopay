@@ -8,6 +8,7 @@ module Mixins
   end
 
   module Model
+    extend ActiveSupport::Concern
     #TODO: tohle bude GopayPayments v generatoru...
     # self.table_name = 'payments'
 
