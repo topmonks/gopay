@@ -1,19 +1,28 @@
-# frozen_string_literal: true
+module Mixins
+  module Controller
+    def update
+      Gopay::Payment.find_by!(gopay_id: params[:id]).update_gopay_status!
 
-module Gopay
-  class Payment < ApplicationRecord
-    self.table_name = 'payments'
+      render json: { ok: true }
+    end
+  end
 
-    belongs_to :target, polymorphic: true, inverse_of: :payments
+  module Model
+    #TODO: tohle bude GopayPayments v generatoru...
+    # self.table_name = 'payments'
 
-    validates :gopay_id, presence: true
-    validates :amount, presence: true
-    validates :currency, presence: true
-    validates :state, presence: true
+    included do
+      belongs_to :target, polymorphic: true, inverse_of: :payments
 
-    scope :paid, (-> { where(state: 'PAID') })
-    scope :unpaid, (-> { where.not(state: 'PAID') })
-    scope :ordered, (-> { order(:created_at) })
+      validates :gopay_id, presence: true
+      validates :amount, presence: true
+      validates :currency, presence: true
+      validates :state, presence: true
+
+      scope :paid, (-> { where(state: 'PAID') })
+      scope :unpaid, (-> { where.not(state: 'PAID') })
+      scope :ordered, (-> { order(:created_at) })
+    end
 
     attr_accessor :gw_url
 
