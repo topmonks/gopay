@@ -4,7 +4,7 @@ require "gopay/version"
 
 Gem::Specification.new do |spec|
   spec.name          = "gopay"
-  spec.version       = Gopay::VERSION
+  spec.version       = "0.1.0"
   spec.authors       = ["Jan Úhlář", "Premysl Donat"]
   spec.email         = ["pdonat@seznam.cz"]
 

@@ -1,4 +1,3 @@
-require "gopay/version"
 require 'gopay/mixins'
 
 module Gopay

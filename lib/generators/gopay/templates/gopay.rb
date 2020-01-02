@@ -1,7 +1,5 @@
 # frozen_string_literal: true
 
-require 'gopay/init'
-
 Gopay::Service.configure do |config|
   config.goid = Figaro.env.GOPAY_ID
   config.client_id = Figaro.env.GOPAY_CLIENT_ID
