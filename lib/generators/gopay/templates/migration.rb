@@ -2,7 +2,7 @@
 
 class GopayCreatePayments < ActiveRecord::Migration[5.1]
   def change
-    create_table :payments do |t|
+    create_table :gopay_payments do |t|
       t.belongs_to :target, polymorphic: true, index: true, null: false
       t.integer :amount, null: false
       t.string :currency, null: false

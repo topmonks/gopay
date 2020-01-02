@@ -1,3 +1,4 @@
+require 'rest-client'
 require 'gopay/mixins'
 
 module Gopay

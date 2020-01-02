@@ -1,29 +1,35 @@
 # Gopay
 
-Gopay payments integration into Rails apps. Work in progress.
+Gopay payments integration into Rails apps. Work in progress. Don't use unless you know what you do.
 
-## Installation
+## Installation and usage
 
 Add this line to your application's Gemfile:
 
 ```ruby
-gem 'gopay', github: 'topmonkscom/easy_resource'
+gem 'gopay', github: 'topmonkscom/gopay'
 ```
 
 And then execute:
 
     $ bundle
 
-## Usage
+Note that it's not yet released to Rubygems. Gem Gopay on Rubygems is something else
 
-* run `rails g gopay:install`
-* run `rails db:migrate`
-* setup config/initializers/gopay.rb
+Then execute:
 
-* Assuming Order.rb model:
+```
+rails g gopay:install
+rails db:migrate
+```
+
+This will create all the necessary files for Gopay models.
+
+Then in model you wish to be payable with Gopay:
+
 ```
 class Order
-  has_many :payments, as: :target, dependent: :destroy, class_name: 'Gopay::Payment'
+  has_many :gopay_payments, as: :target, dependent: :destroy
 
   def gopay_price
     order_items.sum(&:price) * 100
@@ -35,6 +41,32 @@ class Order
 
   def gopay_currency
     'CZK'
+  end
+end
+```
+
+Then in controller where you wish to prepare payment:
+
+```
+def create
+ payment = GopayPayment.create_gopay!(@order, gopay_notification_url, gopay_notification_url)
+
+ respond_to do |format|
+   format.json { render json: { gw_url: payment.gw_url } }
+ end
+end
+
+def update
+  @payment = @order.gopay_payments.find_by!(gopay_id: params[:id])
+
+  @payment.update_gopay_status! do |status| # Run in transaction
+    @order.pay! if status == 'PAID' # or:
+    @order.update!(state: status)
+  end
+
+  respond_to do |format|
+    format.json { render json: { state: @payment.state } }
+    format.html {}
   end
 end
 ```
@@ -76,34 +108,6 @@ button_tag 'Pay', class: 'btn btn-success btn-accept btn-lg',style: 'background-
 </script>
 ```
 
-* In some controller:
-
-```
-
-def create
- payment = Payment.create_gopay!(@order, gopay_notification_url, gopay_notification_url)
- 
- respond_to do |format|
-   format.json { render json: { gw_url: payment.gw_url } }
- end
-end
-
-def update
-  @payment = @order.payments.find_by!(gopay_id: params[:id])
-  
-  @payment.update_gopay_status! do |status| # Run in transaction
-    @order.pay! if status == 'PAID' # or:
-    @order.update!(state: status)
-    ...
-  end
-  
-  respond_to do |format|
-    format.json { render json: { state: @payment.state } }
-    format.html {}
-  end
-end
-
-```
 
 ## Development
 
