@@ -36,18 +36,17 @@ module Gopay
 
           payment = target.gopay_payments.build
           response = Gopay::Service.create_payment!(payment.data(return_url, notification_url))
+          puts response
           payment.amount = response['amount']
           payment.currency = response['currency']
           payment.order_number = response['order_number']
           payment.gopay_id = response['id']
           payment.state = response['state']
-          payment.gw_url = response['gw_url']
+          payment.gateway_url = response['gw_url']
           payment.save!
           payment
         end
       end
-
-      attr_accessor :gw_url
 
       def paid?
         state == 'PAID'

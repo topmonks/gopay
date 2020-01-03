@@ -48,6 +48,8 @@ module Gopay
           'Authorization' => "Bearer #{token(token_scope(path))}" }
       end
 
+      # payment-create - for new payment
+      # payment-all - for testing state etc
       def token_scope(path)
         payment?(path) ? 'payment-create' : 'payment-all'
       end
@@ -56,8 +58,6 @@ module Gopay
         payment?(path) ? 'application/json' : 'application/x-www-form-urlencoded'
       end
 
-      # payment-create - for new payment
-      # payment-all - for testing state etc
       def token(scope = 'payment-create')
         response = RestClient.post("#{gate_url}/api/oauth2/token", { grant_type: 'client_credentials', scope: scope },
                                    'Accept' => 'application/json',

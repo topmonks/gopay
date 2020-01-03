@@ -9,6 +9,10 @@ class GopayCreatePayments < ActiveRecord::Migration[5.1]
       t.string :order_number
       t.string :gopay_id, null: false
       t.string :state, null: false
+      t.string :gateway_url
+
+      t.index(:gateway_url, unique: true)
+      t.index(:gopay_id, unique: true)
 
       t.timestamps null: false
     end
