@@ -62,10 +62,12 @@ module Gopay
       def update_gopay_status!
         response = Gopay::Service.payment(gopay_id)
         status = response['state']
-        self.class.transaction do
-          update!(state: status)
-          yield status if block_given?
-        end
+
+        update!(state: status)
+
+        yield response if block_given?
+
+        self
       end
 
     end
