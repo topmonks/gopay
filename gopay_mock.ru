@@ -20,8 +20,23 @@ class HelloWorld
         ["{\"access_token\":\"123\"}"]
       ]
     when [(/\/api\/payments\/payment\/\d*$/ === path) && path, 'GET'] then
+      id = path.split('/').last
+      gopay_id = $storage[id]
+
+      state = $storage
+
       [ 200,
         {'Content-Type' => 'application/json'},
+        ["{\"state\":\"PAID\"}"]
+      ]
+    when [(/\/api\/payments\/payment\/\d*\/fail/ === path) && path, 'GET'] then
+      id = path.split('/')[-2]
+      gopay_id = $storage[id]
+      require 'pry'; binding.pry
+
+      redirect_link = "http://localhost:3000/ticket_bundles/update_payment?#{Rack::Utils.build_query({ id: gopay_id })}"
+      [ 301,
+        {'Content-Type' => 'application/json', 'Location' => redirect_link },
         ["{\"state\":\"PAID\"}"]
       ]
     when ['/api/payments/payment', 'POST'] then
@@ -45,14 +60,14 @@ class HelloWorld
       gopay_id = $storage[query['id']]
 
       href = "http://localhost:3000/ticket_bundles/update_payment?#{Rack::Utils.build_query({ id: gopay_id })}"
+      pay_link = "<a href='#{href}'>zaplatit</a>"
 
-      # require 'pry'; binding.pry
-      # # 
+      payment_fail_link = "<a href='/api/payments/payment/#{gopay_id}/fail'>pokazit platbu</a>"
 
       [
         200,
         {'Content-Type' => 'text/html'},
-        ["<a href='#{href}'>zaplatit</a>"]
+        ["#{pay_link}</br>#{payment_fail_link}"]
       ]
 
 
