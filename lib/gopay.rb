@@ -1,5 +1,5 @@
-require 'rest-client'
 require 'gopay/mixins'
+require 'rest-client'
 
 module Gopay
   class Error < StandardError
@@ -30,6 +30,7 @@ module Gopay
       def request(method, path, params: nil)
         response = case method.to_sym
                    when :post
+                     #TODO: use net/http
                      RestClient.post(gate_url + path, params, headers(path))
                    when :get
                      RestClient.get(gate_url + path, headers(path))

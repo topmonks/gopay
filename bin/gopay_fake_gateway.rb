@@ -1,19 +1,25 @@
+#!/usr/bin/env ruby
+
 require 'securerandom'
 require 'json'
-require 'rack/query_parser'
+require 'rack'
 
-$storage = {}
+$gopay_storage = {}
 
 class HelloWorld
   def call(env)
-    # require 'pry'; binding.pry
-
-
     path = env['PATH_INFO']
     method = env['REQUEST_METHOD']
+    redirect_url = ENV['REDIRECT_URL']
+
     query = Rack::QueryParser.make_default(100000, 2).parse_query(env.fetch('QUERY_STRING', ''))
 
     case [path, method]
+    when ['/', 'GET'] then
+      [ 200,
+        {'Content-Type' => 'text/html'},
+        [$gopay_storage.to_s]
+      ]
     when ['/api/oauth2/token', 'POST'] then
       [ 200,
         {'Content-Type' => 'application/json'},
@@ -21,9 +27,9 @@ class HelloWorld
       ]
     when [(/\/api\/payments\/payment\/\d*$/ === path) && path, 'GET'] then
       id = path.split('/').last
-      gopay_id = $storage[id]
+      gopay_id = $gopay_storage[id]
 
-      state = $storage
+      state = $gopay_storage
 
       [ 200,
         {'Content-Type' => 'application/json'},
@@ -31,7 +37,7 @@ class HelloWorld
       ]
     when [(/\/api\/payments\/payment\/\d*\/fail/ === path) && path, 'GET'] then
       id = path.split('/')[-2]
-      gopay_id = $storage[id]
+      gopay_id = $gopay_storage[id]
       require 'pry'; binding.pry
 
       redirect_link = "http://localhost:3000/ticket_bundles/update_payment?#{Rack::Utils.build_query({ id: gopay_id })}"
@@ -42,7 +48,7 @@ class HelloWorld
     when ['/api/payments/payment', 'POST'] then
       url_id = SecureRandom.hex
       gopay_id = SecureRandom.rand.to_s[2..-1].to_i
-      $storage[url_id] = gopay_id
+      $gopay_storage[url_id] = gopay_id
 
       gateway_url = "#{env['rack.url_scheme']}://#{env['SERVER_NAME']}:#{env['SERVER_PORT']}/pay?id=#{url_id}"
 
@@ -57,7 +63,7 @@ class HelloWorld
         [body.to_json]
       ]
     when ['/pay', 'GET'] then
-      gopay_id = $storage[query['id']]
+      gopay_id = $gopay_storage[query['id']]
 
       href = "http://localhost:3000/ticket_bundles/update_payment?#{Rack::Utils.build_query({ id: gopay_id })}"
       pay_link = "<a href='#{href}'>zaplatit</a>"
@@ -89,4 +95,4 @@ class HelloWorld
   end
 end
 
-run HelloWorld.new
+Rack::Handler::WEBrick.run HelloWorld.new
